@@ -8,6 +8,7 @@ class Bank
     Bank(std::string_view bname){
         std::cout << "Bank constructor is called\n";
         name = bname;
+        counter += 12; //increase static value inside the constructor
     }
     ~Bank(){
         std::cout << "Bank destructor is called\n";
@@ -15,7 +16,10 @@ class Bank
     }
     private:
         std::string name;
+        inline static int counter{0}; //inline keyword allows to initiazied the static variable inline
+        static int no_inline; //error: non-const static data member must be initialized out of line
 };
+int Bank::no_inline = 12;
 /*
 Class scope
 + Account account{}; //an account object
@@ -89,8 +93,17 @@ void setBalance(Account& acc, double value){
     acc.m_balance = value;
 }
 
+struct DesignatedInitilizer
+{
+    int first;
+    int last;
+
+};
 int main()
 {
+    DesignatedInitilizer di{.first{100}, .last{200}};
+    std::cout << di.first << " " << di.last << std::endl;
+    
     Account a0{};
     a0.setArray();
     setBalance(a0, 99.99);
