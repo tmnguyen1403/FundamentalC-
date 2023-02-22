@@ -24,6 +24,14 @@ Class scope
 */
 class Account 
 {
+    //friendship - allow the free method to access the private data of the class
+    /*
+    + Friendship is granted, not taken.
+    + Friendship is not symmetric - A is friend of B but B might/might not friend of A
+    + Friendshuip is not transitive - A friend B, B friend C, A is not friend C.
+    
+    */
+    friend void setBalance(Account& acc, double value);
 public:
 
     //default constructor
@@ -77,10 +85,17 @@ private:
     Bank bank; 
 };
 
+void setBalance(Account& acc, double value){
+    acc.m_balance = value;
+}
+
 int main()
 {
     Account a0{};
     a0.setArray();
+    setBalance(a0, 99.99);
+    std::cout << "setBalance for a0 using friend function - balance: " << a0.getBalance() << std::endl;
+
     Account at{};
     at = a0;
     std::cout <<"Check default assignment operator to see if it does shallow or deep copy with the array data member. It is deep copy:\n";
