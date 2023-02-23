@@ -32,6 +32,19 @@ In summary, when using virtual functions:
 + Requiring extra time to reference the virtual function implementation in run time.
 These overheads can be significant to IoT apps that have memory constraints. 
 */
+
+/*
+Non-Virtual Interface (NVI) idiom
+1. Prefer to make interfaces non-virtual
++ interfaces are public functions. each function should serve only one purpose. However, a public virtual function serves two purposes: describe part of a class's interface AND enables derived classes to customize behavior by overriding the virtual function.
+2. Prefer to make virtual functions private
++ a derived class can still override private virtual function of the base class (strange phenomenon). The private virtual function is hidden from the user --> serve single purpose as behavior customization.
+3. Only if derived classes need to invoke the base implementation of a virtual function, make the virtual function protected
++ 
+4. A "base-class destructor" should be either "public" and "virtual", or "protected" and "non-virtual"
++ undefined behavior if an object is detroyed through a "base-class pointer" and is not virtual
++ if the class hierarchies have no virtual functions, making "protected base-class destructor" prevents destruction through a "base-class pointer" but still enables the destructor to be called  by a derived class destructor
+*/
 #include <iostream>
 #include <string>
 
@@ -50,7 +63,7 @@ class Triangle final : public Shape
         void draw() const override {
             std::cout << "Draw triangle\n";
         }
-};
+}; 
 
 class Base
 {
@@ -66,6 +79,35 @@ class Derived : public Base
     public:
         std::string hello() const override {
             return "Hello derived";
+        }
+};
+
+//Apply NVI idioms
+
+class BaseNVI
+{
+    public:
+        void sayHello() {hello();}
+        std::string askName() {
+            return getName();
+        }
+        virtual ~BaseNVI() = default;
+    protected:
+        virtual std::string getName() const {return "base";};
+    private:
+        virtual void hello() const = 0;
+};
+
+class DerivedNVI : public BaseNVI
+{
+    private:
+        void hello() const override 
+        {
+            std::cout << "Hi, I am DerivedNVI\n";
+        }
+        std::string getName() const override
+        {
+            return "derived " + BaseNVI::getName();
         }
 };
 
@@ -97,5 +139,12 @@ int main() {
     Triangle triangle{};
     Shape * pshape{&triangle};
     pshape->draw();
+
+
+    std::cout << "Apply NVI idoms:\n";
+    DerivedNVI derivedNVI;
+
+    derivedNVI.sayHello();
+    std::cout << "name: " << derivedNVI.askName() << std::endl;
     return 0;
 }
