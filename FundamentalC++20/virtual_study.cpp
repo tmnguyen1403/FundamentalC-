@@ -13,6 +13,25 @@ If a virtual function is called in base class constructor, it calls the base cla
 
 */
 
+/*
+Virtual function overhead problems
+
+Virtual function table (vtable) is created for every class that has virtual functions. The vtable contains pointers pointing to 
+the implementation of the virtual functions.
+
+Example: class A {virtual function1, virtual function2}
+--> Vtable(A) -> {pt1 -> funcion1 implementation, pt2 -> function2 implementation}
+
+Every derived class of a base class containing virtual functions will also get virtual function. Therefore, they also have vtable.
+Each object of a class having virtual functions has a pointer pointing to the class vtable. 
+When the object call a virtual function, the pointer is dereferenced to access to the vtable and the pointer of the function in '
+the vtable is dereferenced to get the correct implementation of the function. This is the overhead of using virtual functions.
+
+In summary, when using virtual functions:
++ Requiring extra memory to store vtables.
++ Requiring extra time to reference the virtual function implementation in run time.
+These overheads can be significant to IoT apps that have memory constraints. 
+*/
 #include <iostream>
 #include <string>
 
@@ -56,7 +75,11 @@ int main() {
     std::cout << "normal object\n";
     std::cout << base.hello() << std::endl;
     std::cout << derived.hello() << std::endl;
-    
+    Base base2;
+    base2 = derived;
+    std::cout << "aim base object at derived object yet function call is base function\n";
+    std::cout << base2.hello() << std::endl;
+
     Base* bptr{&base};
     std::cout << "using base pointers\n";
     std::cout << bptr->hello() << std::endl;
