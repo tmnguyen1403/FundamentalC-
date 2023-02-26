@@ -48,9 +48,17 @@ Moving does not move anything
 #include <iostream>
 #include <initializer_list>
 #include <span>
+#include <string>
+#include <sstream>
 
 class MyArray final
 {
+    friend MyArray operator+(const int& left , const MyArray& right) {
+        MyArray result(right);
+        return result + left;
+        //return (right + left);
+    }
+public:
     //overloaded stream extraction operator
     //friend std::istream& operator>> (std::);
     friend void swap(MyArray& a, MyArray& b) noexcept{
@@ -99,16 +107,83 @@ class MyArray final
         return *this;
     }
 
-    size_t size() const {
+    bool operator==(const MyArray& right) const noexcept {
+        const std::span<const int> lhs{m_ptr.get(), m_size};
+        const std::span<const int> rhs{right.m_ptr.get(), right.m_size};
+        // right.m_ptr = nullptr; - I can access the private value but I cannot write to it
+        return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs), std::end(rhs));
+    }
+
+    int& operator[](std::size_t index) {
+        if (index >= m_size) {
+            throw std::out_of_range{"Index out of range"};
+        }
+        return m_ptr[index];
+    }
+
+    MyArray operator+(const MyArray& right) {
+        MyArray result(m_size);
+        for (int count{0}; count < m_size; ++ count) {
+            result.m_ptr[count] = m_ptr[count] + right.m_ptr[count];
+        }
+        return std::move(result);
+    }
+
+    MyArray operator+(const int& right) {
+        MyArray result(m_size);
+        for (int count{0}; count < m_size; ++ count) {
+            result.m_ptr[count] = m_ptr[count] + right;
+        }
+        return std::move(result);
+    }
+
+
+    //
+    void testAccessLevel(MyArray& other) {
+        const std::span<const int> t{other.m_ptr.get(), other.m_size};
+        other.m_size = 20;
+    }
+
+    ~MyArray() = default;
+
+    size_t size() const noexcept {
         return m_size;
     }
 
-    private:
-        size_t m_size;
-        std::unique_ptr<int[]> m_ptr;
+    std::string toString() const {
+        const std::span<const int> items{m_ptr.get(), m_size};
+        std::ostringstream output;
+        output << "{";
+
+        for (std::size_t count{0}; const auto& item: items) {
+            ++count;
+            output << item << (count < m_size ? ", " : "");
+        }
+        output <<"}";
+        return output.str();
+    }
+
+private:
+    std::size_t m_size;
+    std::unique_ptr<int[]> m_ptr;
 };
+
+
 
 int main()
 {
+    MyArray a1{1,2,3,4,5};
+    MyArray a2{1,2,3,4,5};
+    MyArray a3{1,2,3};
+    std::cout << a1.toString() << std::endl;
+    std::cout << std::boolalpha << "a1 == a2" <<  (a1 == a2) << std::endl;
+    std::cout << std::boolalpha << "a1 == a3" << (a1 == a3) << std::endl;
+    a1.testAccessLevel(a2);
+    std::cout << a2.size() << std::endl;
+    std::cout << "a1[3] = " << a1[3] << std::endl;
+    std::cout << (a1 + a2).toString() << std::endl;
+     std::cout << (a1 + 10).toString() << std::endl;
+    std::cout << (10 + a1).toString() << std::endl;
+    std::cout << (10 + a1 + a2 + a3 + 24).toString() << std::endl;
     return 0;
 }
