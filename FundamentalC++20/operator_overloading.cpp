@@ -50,6 +50,22 @@ Moving does not move anything
 #include <span>
 #include <string>
 #include <sstream>
+#include <algorithm>
+#include <compare>
+class Test final
+{
+    friend void swap(Test& a, Test& b) noexcept{
+        std::swap(a.data, b.data);
+    }
+    public:
+        explicit Test(double d): data{d}{}
+        double getData() {
+            return data;
+        }
+        auto operator<=>(const Test& t) const noexcept = default;
+    private:
+        double data{0.0};
+};
 
 class MyArray final
 {
@@ -58,12 +74,20 @@ class MyArray final
         return result + left;
         //return (right + left);
     }
+    friend std::ostream& operator<<(std::ostream& os, const MyArray& data) {
+        os << data.toString();
+        return os;
+    }
+    friend void swap(MyArray& a, MyArray& b) noexcept{
+        std::cout << "swapping\n";
+        std::swap(a.m_size, b.m_size);
+        a.m_ptr.swap(b.m_ptr);
+        std::cout << "Done swapping\n";
+    }
 public:
     //overloaded stream extraction operator
     //friend std::istream& operator>> (std::);
-    friend void swap(MyArray& a, MyArray& b) noexcept{
-        
-    }
+
     explicit MyArray(size_t size) : m_size{size}, m_ptr{std::make_unique<int[]>(size)}{
         std::cout << "MyArray(size_t) constructor\n";
     }
@@ -137,7 +161,7 @@ public:
         return std::move(result);
     }
 
-
+   
     //
     void testAccessLevel(MyArray& other) {
         const std::span<const int> t{other.m_ptr.get(), other.m_size};
@@ -185,5 +209,33 @@ int main()
      std::cout << (a1 + 10).toString() << std::endl;
     std::cout << (10 + a1).toString() << std::endl;
     std::cout << (10 + a1 + a2 + a3 + 24).toString() << std::endl;
+    
+    std::cout << "a1: " <<  a1 << std::endl;
+    std::cout << "a3:" << a3 << std::endl;
+    std::cout << "swap(a1,a3)\n";
+
+    swap(a1, a3);
+    std::cout << "a1: " <<  a1 << std::endl;
+    std::cout << "a3:" << a3 << std::endl;
+
+    Test t1{12.0}, t2{24.0};
+    std::cout << "t1: " << t1.getData() << std::endl;
+    std::cout << "t2: " << t2.getData() << std::endl;
+    std::cout << "t1 < t2: " << (t1 < t2) << std::endl;
+    std::cout << "swap(t1,t2)\n";
+    swap(t1,t2);
+    std::cout << "t1: " << t1.getData() << std::endl;
+    std::cout << "t2: " << t2.getData() << std::endl;
+    std::cout << "t1 < t2: " << (t1 < t2) << std::endl;
+    if ((t1 <=>t2) == 0) {
+        std::cout << "t1 = t2\n";
+    }
+    if ((t1 <=>t2) < 0) {
+        std::cout << "t1 < t2\n";
+    }
+    if ((t1 <=>t2) > 0) {
+        std::cout << "t1 > t2\n";
+    }
     return 0;
+
 }
