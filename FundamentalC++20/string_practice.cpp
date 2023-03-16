@@ -13,5 +13,6 @@ int main() {
     //Testing new C++20
     std::cout << "\ns1 starts with he: " << s1.starts_with("he") << std::endl;
     std::cout << "\ns1 ends with lo: " << s1.ends_with("lo") << std::endl;
+    //int a {20.0};
     return 0;
 }

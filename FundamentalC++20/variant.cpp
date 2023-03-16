@@ -29,7 +29,14 @@ class Commission {
         double m_commissionRate{0.0};
 };
 
-using CompensationModel = std::variant<Commission, Salaried>;
+class TestNoString {
+    public:
+        std::string toString() const {return "";};
+        double earnings() const {return 0.0;};
+        
+};
+
+using CompensationModel = std::variant<Commission, Salaried, TestNoString>;
 class Employee final {
     public:
         //dependency injection by using constructor 
