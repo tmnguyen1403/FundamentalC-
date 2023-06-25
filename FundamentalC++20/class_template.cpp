@@ -1,6 +1,7 @@
 #include <iostream>
 #include<variant>
 #include <cstdint>
+#include <string>
 //
 struct A1{
     explicit A1(int a): a_{a}{};
@@ -47,6 +48,7 @@ class DataProcessor{
 template<>
 class DataProcessor<data>{
     public:
+        explicit DataProcessor<data>(): handle{10}{};
         void onNew(data& a) {
             std::cout << "data DataProcessor\n";
             auto f = [&a]<class T>(T& v){
@@ -66,6 +68,8 @@ class DataProcessor<data>{
         void onUpdate(data& t) {
             
         }
+    private:
+        int handle;
 };
 
 template<class T, class U, class Z>
@@ -76,6 +80,30 @@ public:
         this->onNew(u);
     }
 };
+
+void title(std::string& s) {
+    std::cout <<"title &s\n";
+    std::string a = s;
+}
+
+
+void title(std::string&& s) {
+    std::cout <<"title &&s\n";
+
+    std::string a = std::move(s);
+}
+
+void title(int& s) {
+    std::cout <<"title &s\n";
+    int a = s;
+}
+
+
+void title(int&& s) {
+    std::cout <<"title &&s\n";
+
+   int a = std::move(s);
+}
 
 int main() {
     // B<int, float, char> b1;
@@ -113,6 +141,23 @@ int main() {
     b3.update(d2);  // specialized update for double
      std::visit(f,d2.get());
     
+    //this work because const auto is deduce as const char[]
+    // const auto s1{"hello"};
+    // title(s1); 
+    // title(std::move(s1)); 
+
+    // const std::string s2{"hello"};
+    // title(s2); 
+    // title(std::move(s2)); 
+
+    //not it does not work because type is deduced correctly
+    // const auto s1{12};
+    // title(s1); 
+    // title(std::move(s1)); 
+
+    // const std::string s2{"hello"};
+    // title(s2); 
+    // title(std::move(s2)); 
     
     // auto& da1 = d1.get();
     // auto& da2 = d2.get();
