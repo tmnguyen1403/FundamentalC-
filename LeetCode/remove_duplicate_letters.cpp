@@ -28,9 +28,19 @@ public:
         fill_n(in_stack.begin(), in_stack.size(), false);
         //using stack to solve the problem
         stack<char> char_stack{};
+        /*
+        * Time complexity: O(n)
+        */
         for (auto index = 0; index < s.length(); ++index) {
             char c = s[index];
             if (!in_stack[c-'a']) {
+                /*
+                * Time complexity: constant
+                * Worst case scenario is when it has to pop all alphabet character in the stack,
+                * which is only 25 characters (cannot pop 'a'), and it occurs at every 26th time.
+                * Therefore, the while loop is constant
+                * Example worst case: "a..za..za..za..z"
+                */
                 while (!char_stack.empty()) {
                     const char& top_c = char_stack.top();
                     if (c < top_c && index < last_occurrences[top_c - 'a']) {
